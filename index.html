@@ -10,6 +10,7 @@
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%2325d366'/%3E%3Cpath d='M9 23l1.2-4A7 7 0 1114 22z' fill='%23fff'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://10sports.cricket">
 <link rel="dns-prefetch" href="https://10sports.cricket">
+<link rel="dns-prefetch" href="https://connect.facebook.net">
 <style>
   :root {
     --bg: #06110b;
@@ -154,7 +155,7 @@
    META_PIXEL_ID: optional; your Meta (Facebook) Pixel ID for ad tracking.
    ================================================================== */
 var SIGNUP_URL = "https://10sports.cricket/register/?c=HvTy5ABW";
-var META_PIXEL_ID = "";
+var META_PIXEL_ID = "1022917280660411";
 /* ================================================================== */
 
 (function () {
@@ -166,19 +167,32 @@ var META_PIXEL_ID = "";
     cta.href = url.href;
   } catch (e) { cta.href = SIGNUP_URL; }
 
-  cta.addEventListener("click", function () {
-    try { (window.dataLayer = window.dataLayer || []).push({ event: "signup_click" }); } catch (e) {}
-    try { if (window.fbq) window.fbq("track", "Lead"); } catch (e) {}
-  });
-
-  // Meta Pixel, loaded after the page has rendered so it never slows the first paint.
+  // Meta Pixel: the queue is ready immediately (so early taps are kept); the script itself
+  // loads only after the page has rendered, so it never slows the first paint.
   if (META_PIXEL_ID) {
-    window.addEventListener("load", function () {
-      !function (f, b, e, v, n, t, s) { if (f.fbq) return; n = f.fbq = function () { n.callMethod ? n.callMethod.apply(n, arguments) : n.queue.push(arguments); }; if (!f._fbq) f._fbq = n; n.push = n; n.loaded = !0; n.version = "2.0"; n.queue = []; t = b.createElement(e); t.async = !0; t.src = v; s = b.getElementsByTagName(e)[0]; s.parentNode.insertBefore(t, s); }(window, document, "script", "https://connect.facebook.net/en_US/fbevents.js");
-      window.fbq("init", META_PIXEL_ID);
-      window.fbq("track", "PageView");
-    });
+    !function (f, n) { if (f.fbq) return; n = f.fbq = function () { n.callMethod ? n.callMethod.apply(n, arguments) : n.queue.push(arguments); }; if (!f._fbq) f._fbq = n; n.push = n; n.loaded = !0; n.version = "2.0"; n.queue = []; }(window);
+    window.fbq("init", META_PIXEL_ID);
+    window.fbq("track", "PageView");
+    var loadPixel = function () {
+      var t = document.createElement("script"); t.async = true; t.src = "https://connect.facebook.net/en_US/fbevents.js";
+      document.head.appendChild(t);
+    };
+    if (document.readyState === "complete") loadPixel(); else window.addEventListener("load", loadPixel);
   }
+
+  var going = false;
+  cta.addEventListener("click", function (e) {
+    try { (window.dataLayer = window.dataLayer || []).push({ event: "signup_click" }); } catch (err) {}
+    if (!META_PIXEL_ID || !window.fbq) return;        // no pixel: plain link, go now
+    if (e.ctrlKey || e.metaKey || e.shiftKey) { window.fbq("track", "Lead"); return; }  // new-tab clicks
+    e.preventDefault();
+    if (going) return; going = true;
+    window.fbq("track", "Lead");
+    var href = cta.href;
+    setTimeout(function () { location.href = href; }, 300);  // give the Lead event time to send
+  });
+  // Coming back with the Back button: allow tapping again.
+  window.addEventListener("pageshow", function () { going = false; });
 })();
 </script>
 </body>
