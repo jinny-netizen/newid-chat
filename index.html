@@ -28,7 +28,25 @@ var META_PIXEL_ID = "1022917280660411";
   } catch (e) {}
   // location.replace: this page is skipped in history, so Back returns to the ad, not here.
   if (REDIRECT_DELAY_MS === 0) location.replace(href);
-  else if (REDIRECT_DELAY_MS > 0) setTimeout(function () { location.replace(href); }, REDIRECT_DELAY_MS);
+  else if (REDIRECT_DELAY_MS > 0) {
+    // Start the timer only once the page is actually on screen, so visitors always
+    // see the landing page for the full REDIRECT_DELAY_MS, even on slow phones.
+    var started = false, go = function () { location.replace(href); };
+    var start = function () {
+      if (started) return; started = true;
+      var note = document.getElementById("note");
+      if (note) note.textContent = "Opening the 10Sports sign-up page…";
+      setTimeout(go, REDIRECT_DELAY_MS);
+    };
+    var afterPaint = function () {
+      // two animation frames = the first frame has been painted
+      if (window.requestAnimationFrame) requestAnimationFrame(function () { requestAnimationFrame(start); });
+      else start();
+      setTimeout(start, 500);  // safety net (e.g. tab opened in the background)
+    };
+    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", afterPaint);
+    else afterPaint();
+  }
 })();
 </script>
 <noscript><meta http-equiv="refresh" content="0;url=https://10sports.cricket/register/?c=HvTy5ABW"></noscript>
