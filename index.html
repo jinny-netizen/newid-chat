@@ -145,7 +145,7 @@
   </a>
 
   <p class="checks"><span>Fast Sign-up</span><span>Takes ~2 Minutes</span><span>Simple Steps</span></p>
-  <p class="note">You will be taken to the 10Sports sign-up page.</p>
+  <p class="note" id="note" aria-live="polite">You will be taken to the 10Sports sign-up page.</p>
   <p class="rg">18+ only · Please play responsibly</p>
 </main>
 
@@ -156,6 +156,9 @@
    ================================================================== */
 var SIGNUP_URL = "https://10sports.cricket/register/?c=HvTy5ABW";
 var META_PIXEL_ID = "1022917280660411";
+/* AUTO_REDIRECT_MS: send visitors to SIGNUP_URL automatically after this many
+   milliseconds (0 = off). Happens once per visit, so the Back button doesn't loop. */
+var AUTO_REDIRECT_MS = 2000;
 /* ================================================================== */
 
 (function () {
@@ -198,6 +201,26 @@ var META_PIXEL_ID = "1022917280660411";
   });
   // Coming back with the Back button: allow tapping again.
   window.addEventListener("pageshow", function () { going = false; });
+
+  // Auto-redirect: once per visit (sessionStorage), with a visible countdown.
+  // It doesn't send a Lead (that stays for real taps), so Meta only counts genuine clicks.
+  var already = false;
+  try { already = sessionStorage.getItem("autoRedirected") === "1"; } catch (e) {}
+  if (AUTO_REDIRECT_MS > 0 && !already) {
+    var note = document.getElementById("note");
+    var left = Math.ceil(AUTO_REDIRECT_MS / 1000);
+    var tick = function () { if (note) note.textContent = "Opening the 10Sports sign-up page in " + left + "s… or tap the button above."; };
+    tick();
+    var timer = setInterval(function () { left--; if (left > 0) tick(); }, 1000);
+    setTimeout(function () {
+      clearInterval(timer);
+      if (going) return;
+      going = true;
+      try { sessionStorage.setItem("autoRedirected", "1"); } catch (e) {}
+      try { (window.dataLayer = window.dataLayer || []).push({ event: "auto_redirect" }); } catch (e) {}
+      location.href = cta.href;
+    }, AUTO_REDIRECT_MS);
+  }
 })();
 </script>
 </body>
