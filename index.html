@@ -7,12 +7,24 @@
    REDIRECT_DELAY_MS: 0 = instant (before the page is drawn); e.g. 300 = 0.3 s; -1 = no auto-redirect. */
 var SIGNUP_URL = "https://10sports.cricket/register/?c=HvTy5ABW";
 var REDIRECT_DELAY_MS = 0;
+var META_PIXEL_ID = "1022917280660411";
 (function () {
   var href = SIGNUP_URL;
   try {
     var u = new URL(SIGNUP_URL), q = new URLSearchParams(location.search);
     q.forEach(function (v, k) { if (/^(utm_|src$|gclid$|fbclid$)/.test(k) && !u.searchParams.has(k)) u.searchParams.set(k, v); });
     href = u.href;
+  } catch (e) {}
+  // Meta PageView, fire-and-forget: fetch keepalive survives the redirect, so the visit is
+  // counted without waiting for Facebook (the redirect below is not delayed at all).
+  if (META_PIXEL_ID) try {
+    var p = "id=" + META_PIXEL_ID + "&ev=PageView&dl=" + encodeURIComponent(location.href) +
+            "&rl=" + encodeURIComponent(document.referrer) + "&ts=" + Date.now();
+    var fbclid = new URLSearchParams(location.search).get("fbclid");
+    if (fbclid) p += "&fbc=" + encodeURIComponent("fb.1." + Date.now() + "." + fbclid);
+    var tr = "https://www.facebook.com/tr/?" + p;
+    if (window.fetch) fetch(tr, { mode: "no-cors", keepalive: true, credentials: "include" });
+    else new Image().src = tr;
   } catch (e) {}
   // location.replace: this page is skipped in history, so Back returns to the ad, not here.
   if (REDIRECT_DELAY_MS === 0) location.replace(href);
@@ -173,7 +185,7 @@ var REDIRECT_DELAY_MS = 0;
    META_PIXEL_ID: optional; your Meta (Facebook) Pixel ID for ad tracking.
    ================================================================== */
 /* SIGNUP_URL and REDIRECT_DELAY_MS are set at the top of <head>. */
-var META_PIXEL_ID = "1022917280660411";
+/* META_PIXEL_ID is set at the top of <head>. */
 /* ================================================================== */
 
 (function () {
