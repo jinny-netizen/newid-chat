@@ -4,9 +4,8 @@
 <meta charset="utf-8">
 <script>
 /* SIGNUP_URL: where the button goes (your 10Sports referral link).
-   META_PIXEL_ID: Meta Pixel for 10Sports. Sends PageView on visit, Lead only when the button is tapped. */
+   No Meta Pixel on this page (removed 17 Oct 2026). Visits and taps are counted by our own stats at /t. */
 var SIGNUP_URL = "https://10sports.cricket/register/?c=HvTy5ABW";
-var META_PIXEL_ID = "1022917280660411";
 /* A/B test: each visitor gets version a or b (50/50) and keeps it. Force one with ?ab=a or ?ab=b. */
 var AB = (function () {
   var v;
@@ -20,14 +19,6 @@ var AB = (function () {
   document.documentElement.className = "v-" + v;
   return v;
 })();
-if (META_PIXEL_ID) {
-  // Standard Meta Pixel queue: ready immediately; the script itself loads after the page is on screen.
-  !function (f, n) { if (f.fbq) return; n = f.fbq = function () { n.callMethod ? n.callMethod.apply(n, arguments) : n.queue.push(arguments); }; if (!f._fbq) f._fbq = n; n.push = n; n.loaded = !0; n.version = "2.0"; n.queue = []; }(window);
-  fbq("init", META_PIXEL_ID);
-  fbq("track", "PageView");
-  var loadPixel = function () { var t = document.createElement("script"); t.async = true; t.src = "https://connect.facebook.net/en_US/fbevents.js"; document.head.appendChild(t); };
-  if (document.readyState === "complete") loadPixel(); else window.addEventListener("load", loadPixel);
-}
 </script>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Need a New ID? — 10Sports</title>
@@ -37,8 +28,6 @@ if (META_PIXEL_ID) {
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%2325d366'/%3E%3Cpath d='M9 23l1.2-4A7 7 0 1114 22z' fill='%23fff'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://10sports.cricket">
 <link rel="dns-prefetch" href="https://10sports.cricket">
-<link rel="dns-prefetch" href="https://connect.facebook.net">
-<link rel="dns-prefetch" href="https://www.facebook.com">
 <style>
   :root {
     --bg: #06110b;
@@ -239,10 +228,8 @@ if (META_PIXEL_ID) {
 <script>
 /* ============================ SETTINGS ============================
    SIGNUP_URL: where the button goes (your 10Sports referral link).
-   META_PIXEL_ID: optional; your Meta (Facebook) Pixel ID for ad tracking.
    ================================================================== */
 /* SIGNUP_URL is set at the top of <head>. */
-/* META_PIXEL_ID is set at the top of <head>. */
 /* ================================================================== */
 
 (function () {
@@ -281,44 +268,10 @@ if (META_PIXEL_ID) {
     } else sticky.classList.add("show");
   }
 
-  // Lead is sent only when the visitor taps the button (never automatically).
-  function sendLead(done) {
-    if (!META_PIXEL_ID) { done && done(); return; }
-    var finished = false, finish = function () { if (!finished) { finished = true; done && done(); } };
-    var eid = "lead." + Date.now() + "." + Math.random().toString(36).slice(2, 10);
-    // Meta's script loaded: send through it (uses the _fbp cookie, best matching).
-    if (window.fbq && window.fbq.getState) {
-      try { window.fbq("track", "Lead", {}, { eventID: eid }); } catch (err) {}
-      setTimeout(finish, 300);
-      return;
-    }
-    // Tapped before Meta's script finished loading (e.g. slow 3G): lightweight fallback.
-    try {
-      var p = new URLSearchParams({
-        id: META_PIXEL_ID, ev: "Lead", dl: location.href, rl: document.referrer,
-        ts: String(Date.now()), eid: eid
-      });
-      var fbclid = new URLSearchParams(location.search).get("fbclid");
-      if (fbclid) p.set("fbc", "fb.1." + Date.now() + "." + fbclid);  // keeps ad-click attribution
-      var img = new Image();
-      img.onload = img.onerror = finish;
-      img.src = "https://www.facebook.com/tr/?" + p.toString();
-    } catch (err) { finish(); return; }
-    setTimeout(finish, 400);  // never hold the visitor longer than 0.4 s
-  }
-
-  var going = false;
-  links.forEach(function (link) { link.addEventListener("click", function (e) {
+  // Button tap: plain link to the sign-up page (no Meta Pixel on this page).
+  links.forEach(function (link) { link.addEventListener("click", function () {
     try { (window.dataLayer = window.dataLayer || []).push({ event: "signup_click", variant: AB }); } catch (err) {}
-    if (!META_PIXEL_ID) return;                                     // no pixel: plain link, go now
-    if (e.ctrlKey || e.metaKey || e.shiftKey) { sendLead(); return; }  // new-tab clicks
-    e.preventDefault();
-    if (going) return; going = true;
-    var href = link.href;
-    sendLead(function () { location.href = href; });
   }); });
-  // Coming back with the Back button: allow tapping again.
-  window.addEventListener("pageshow", function () { going = false; });
 
 })();
 </script>
