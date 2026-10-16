@@ -7,6 +7,19 @@
    META_PIXEL_ID: Meta Pixel for 10Sports. Sends PageView on visit, Lead only when the button is tapped. */
 var SIGNUP_URL = "https://10sports.cricket/register/?c=HvTy5ABW";
 var META_PIXEL_ID = "1022917280660411";
+/* A/B test: each visitor gets version a or b (50/50) and keeps it. Force one with ?ab=a or ?ab=b. */
+var AB = (function () {
+  var v;
+  try {
+    v = new URLSearchParams(location.search).get("ab");
+    if (v !== "a" && v !== "b") {
+      v = localStorage.getItem("newid_ab");
+      if (v !== "a" && v !== "b") { v = Math.random() < 0.5 ? "a" : "b"; localStorage.setItem("newid_ab", v); }
+    }
+  } catch (e) { v = Math.random() < 0.5 ? "a" : "b"; }
+  document.documentElement.className = "v-" + v;
+  return v;
+})();
 if (META_PIXEL_ID) {
   // Standard Meta Pixel queue: ready immediately; the script itself loads after the page is on screen.
   !function (f, n) { if (f.fbq) return; n = f.fbq = function () { n.callMethod ? n.callMethod.apply(n, arguments) : n.queue.push(arguments); }; if (!f._fbq) f._fbq = n; n.push = n; n.loaded = !0; n.version = "2.0"; n.queue = []; }(window);
@@ -131,10 +144,54 @@ if (META_PIXEL_ID) {
   :focus-visible { outline: 3px solid var(--green-hi); outline-offset: 3px; }
   @media (max-width: 360px) { h1 { font-size: 34px; } .tile { font-size: 11.5px; } }
   @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; } }
+  /* ---------- A/B ---------- */
+  .v-a .b-only, .v-b .a-only { display: none !important; }
+  .v-b body { align-items: flex-start; }
+  /* ---------- Version B: thumb-first ---------- */
+  .b { width: 100%; max-width: 440px; padding: 4px 4px 96px; text-align: left; }
+  .b-brand { display: flex; align-items: center; gap: 10px; font-size: 17px; font-weight: 800; }
+  .b-brand img { width: 40px; height: 40px; border-radius: 12px; display: block; }
+  .b-brand small { margin-left: auto; font-size: 12px; font-weight: 700; color: var(--muted); }
+  .b-h { margin-top: 22px; font-size: 34px; line-height: 1.08; letter-spacing: -.8px; font-weight: 900; }
+  .b-sub { margin-top: 10px; font-size: 15.5px; line-height: 1.5; color: var(--muted); }
+  .b-cta {
+    position: relative; overflow: hidden; margin-top: 22px; min-height: 74px; border-radius: 18px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    background: #ff8a1f; color: #1c0a00; text-decoration: none;
+    box-shadow: 0 0 0 5px rgba(255,138,31,.16), 0 14px 34px rgba(255,120,20,.33);
+  }
+  .b-cta strong { font-size: 21px; font-weight: 900; letter-spacing: .1px; }
+  .b-cta span { margin-top: 2px; font-size: 13px; font-weight: 700; color: #4a2300; }
+  .b-cta::after {
+    content: ""; position: absolute; top: 0; left: -60%; width: 40%; height: 100%;
+    background: linear-gradient(100deg, transparent, rgba(255,255,255,.55), transparent);
+    transform: skewX(-20deg); animation: shine 3.4s ease-in-out 1s infinite;
+  }
+  @keyframes shine { 0% { left: -60%; } 28%, 100% { left: 130%; } }
+  .b-cta:active, .b-sticky:active { transform: scale(.98); }
+  .b-ticks { display: flex; justify-content: center; gap: 16px; margin-top: 12px; font-size: 13px; font-weight: 700; color: var(--muted); }
+  .b-ticks span::before { content: "✓ "; color: var(--green-hi); }
+  .b-steps { list-style: none; margin-top: 26px; padding-top: 18px; border-top: 1px solid var(--line); display: grid; gap: 12px; counter-reset: s; }
+  .b-steps li { counter-increment: s; display: flex; align-items: center; gap: 12px; font-size: 15px; }
+  .b-steps li::before {
+    content: counter(s); width: 28px; height: 28px; flex-shrink: 0; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(126,224,165,.14); color: var(--green-hi); font-size: 14px; font-weight: 800;
+  }
+  .b .rg { margin-top: 22px; text-align: center; }
+  .b-sticky {
+    position: fixed; left: 12px; right: 12px; z-index: 20;
+    bottom: 12px; bottom: max(12px, env(safe-area-inset-bottom));
+    min-height: 58px; border-radius: 16px; display: flex; align-items: center; justify-content: center;
+    background: #ff8a1f; color: #1c0a00; font-size: 18px; font-weight: 900; text-decoration: none;
+    box-shadow: 0 10px 30px rgba(0,0,0,.5); transform: translateY(150%); transition: transform .25s ease;
+  }
+  .b-sticky.show { transform: none; }
+  @media (max-width: 360px) { .b-h { font-size: 30px; } }
 </style>
 </head>
 <body>
-<main>
+<main class="a-only">
   <p class="pill"><i aria-hidden="true"></i>10Sports · Quick sign-up</p>
 
   <div class="app-icon"><img src="data:image/jpeg;base64,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" width="84" height="84" alt="10Sports"></div>
@@ -164,6 +221,21 @@ if (META_PIXEL_ID) {
   <p class="rg">18+ only · Please play responsibly</p>
 </main>
 
+<div class="b b-only">
+  <div class="b-brand"><img src="data:image/jpeg;base64,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" width="40" height="40" alt="">10Sports<small>18+ only</small></div>
+  <h1 class="b-h">Get your 10Sports ID in 2&nbsp;minutes</h1>
+  <p class="b-sub">Sign up in a few quick steps. Works on any phone.</p>
+  <a class="b-cta js-cta" data-b="b_main" href="https://10sports.cricket/register/?c=HvTy5ABW"><strong>Get my ID now</strong><span>Free sign-up, takes about 2 minutes</span></a>
+  <p class="b-ticks"><span>Free</span><span>2 minutes</span><span>Any phone</span></p>
+  <ol class="b-steps">
+    <li>Tap “Get my ID now”</li>
+    <li>Fill in the short sign-up form</li>
+    <li>Your 10Sports ID is ready to use</li>
+  </ol>
+  <p class="rg">Please play responsibly.</p>
+</div>
+<a class="b-sticky b-only js-cta" id="bSticky" data-b="b_sticky" href="https://10sports.cricket/register/?c=HvTy5ABW" aria-hidden="true" tabindex="-1">Get my ID now</a>
+
 <script>
 /* ============================ SETTINGS ============================
    SIGNUP_URL: where the button goes (your 10Sports referral link).
@@ -175,12 +247,13 @@ if (META_PIXEL_ID) {
 
 (function () {
   var cta = document.getElementById("cta");
+  var links = [cta].concat([].slice.call(document.querySelectorAll(".js-cta")));
   // Pass ad attribution (utm_*, gclid, fbclid) through to the sign-up page.
   try {
     var url = new URL(SIGNUP_URL), q = new URLSearchParams(location.search);
     q.forEach(function (v, k) { if (/^(utm_|src$|gclid$|fbclid$)/.test(k) && !url.searchParams.has(k)) url.searchParams.set(k, v); });
-    cta.href = url.href;
-  } catch (e) { cta.href = SIGNUP_URL; }
+    links.forEach(function (l) { l.href = url.href; });
+  } catch (e) {}
 
   // First-party stats (our own server: Cloudflare Worker + D1 at /t on this domain).
   // sendBeacon is used so the "tap" is still delivered when the page changes to the sign-up site.
@@ -188,7 +261,7 @@ if (META_PIXEL_ID) {
     try {
       var q = new URLSearchParams(location.search);
       var body = JSON.stringify({
-        e: e, b: button || null, r: document.referrer || null, fb: q.has("fbclid") ? 1 : 0,
+        e: e, b: button || null, v: AB, r: document.referrer || null, fb: q.has("fbclid") ? 1 : 0,
         us: q.get("utm_source"), um: q.get("utm_medium"), uc: q.get("utm_campaign"), ut: q.get("utm_content")
       });
       if (navigator.sendBeacon && navigator.sendBeacon("/t", new Blob([body], { type: "text/plain" }))) return;
@@ -196,7 +269,17 @@ if (META_PIXEL_ID) {
     } catch (err) {}
   }
   hit("view");
-  cta.addEventListener("click", function () { hit("tap", "cta"); });
+  links.forEach(function (l) {
+    l.addEventListener("click", function () { hit("tap", l.getAttribute("data-b") || "cta"); });
+  });
+
+  // Version B: sticky bottom button appears whenever the main button is off screen.
+  var sticky = document.getElementById("bSticky"), bMain = document.querySelector(".b-cta");
+  if (AB === "b" && sticky && bMain) {
+    if ("IntersectionObserver" in window) {
+      new IntersectionObserver(function (en) { sticky.classList.toggle("show", !en[0].isIntersecting); }).observe(bMain);
+    } else sticky.classList.add("show");
+  }
 
   // Lead is sent only when the visitor taps the button (never automatically).
   function sendLead(done) {
@@ -225,15 +308,15 @@ if (META_PIXEL_ID) {
   }
 
   var going = false;
-  cta.addEventListener("click", function (e) {
-    try { (window.dataLayer = window.dataLayer || []).push({ event: "signup_click" }); } catch (err) {}
+  links.forEach(function (link) { link.addEventListener("click", function (e) {
+    try { (window.dataLayer = window.dataLayer || []).push({ event: "signup_click", variant: AB }); } catch (err) {}
     if (!META_PIXEL_ID) return;                                     // no pixel: plain link, go now
     if (e.ctrlKey || e.metaKey || e.shiftKey) { sendLead(); return; }  // new-tab clicks
     e.preventDefault();
     if (going) return; going = true;
-    var href = cta.href;
+    var href = link.href;
     sendLead(function () { location.href = href; });
-  });
+  }); });
   // Coming back with the Back button: allow tapping again.
   window.addEventListener("pageshow", function () { going = false; });
 
