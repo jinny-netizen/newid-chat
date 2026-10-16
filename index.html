@@ -182,6 +182,22 @@ if (META_PIXEL_ID) {
     cta.href = url.href;
   } catch (e) { cta.href = SIGNUP_URL; }
 
+  // First-party stats (our own server: Cloudflare Worker + D1 at /t on this domain).
+  // sendBeacon is used so the "tap" is still delivered when the page changes to the sign-up site.
+  function hit(e, button) {
+    try {
+      var q = new URLSearchParams(location.search);
+      var body = JSON.stringify({
+        e: e, b: button || null, r: document.referrer || null, fb: q.has("fbclid") ? 1 : 0,
+        us: q.get("utm_source"), um: q.get("utm_medium"), uc: q.get("utm_campaign"), ut: q.get("utm_content")
+      });
+      if (navigator.sendBeacon && navigator.sendBeacon("/t", new Blob([body], { type: "text/plain" }))) return;
+      fetch("/t", { method: "POST", body: body, keepalive: true, headers: { "Content-Type": "text/plain" } });
+    } catch (err) {}
+  }
+  hit("view");
+  cta.addEventListener("click", function () { hit("tap", "cta"); });
+
   // Lead is sent only when the visitor taps the button (never automatically).
   function sendLead(done) {
     if (!META_PIXEL_ID) { done && done(); return; }
