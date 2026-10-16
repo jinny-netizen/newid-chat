@@ -3,53 +3,19 @@
 <head>
 <meta charset="utf-8">
 <script>
-/* SIGNUP_URL: where visitors go (your 10Sports referral link).
-   REDIRECT_DELAY_MS: 0 = instant (before the page is drawn); e.g. 300 = 0.3 s; -1 = no auto-redirect. */
+/* SIGNUP_URL: where the button goes (your 10Sports referral link).
+   META_PIXEL_ID: Meta Pixel for 10Sports. Sends PageView on visit, Lead only when the button is tapped. */
 var SIGNUP_URL = "https://10sports.cricket/register/?c=HvTy5ABW";
-var REDIRECT_DELAY_MS = 2000;
 var META_PIXEL_ID = "1022917280660411";
-(function () {
-  var href = SIGNUP_URL;
-  try {
-    var u = new URL(SIGNUP_URL), q = new URLSearchParams(location.search);
-    q.forEach(function (v, k) { if (/^(utm_|src$|gclid$|fbclid$)/.test(k) && !u.searchParams.has(k)) u.searchParams.set(k, v); });
-    href = u.href;
-  } catch (e) {}
-  // Meta PageView, fire-and-forget: fetch keepalive survives the redirect, so the visit is
-  // counted without waiting for Facebook (the redirect below is not delayed at all).
-  if (META_PIXEL_ID) try {
-    var p = "id=" + META_PIXEL_ID + "&ev=PageView&dl=" + encodeURIComponent(location.href) +
-            "&rl=" + encodeURIComponent(document.referrer) + "&ts=" + Date.now();
-    var fbclid = new URLSearchParams(location.search).get("fbclid");
-    if (fbclid) p += "&fbc=" + encodeURIComponent("fb.1." + Date.now() + "." + fbclid);
-    var tr = "https://www.facebook.com/tr/?" + p;
-    if (window.fetch) fetch(tr, { mode: "no-cors", keepalive: true, credentials: "include" });
-    else new Image().src = tr;
-  } catch (e) {}
-  // location.replace: this page is skipped in history, so Back returns to the ad, not here.
-  if (REDIRECT_DELAY_MS === 0) location.replace(href);
-  else if (REDIRECT_DELAY_MS > 0) {
-    // Start the timer only once the page is actually on screen, so visitors always
-    // see the landing page for the full REDIRECT_DELAY_MS, even on slow phones.
-    var started = false, go = function () { location.replace(href); };
-    var start = function () {
-      if (started) return; started = true;
-      var note = document.getElementById("note");
-      if (note) note.textContent = "Opening the 10Sports sign-up page…";
-      setTimeout(go, REDIRECT_DELAY_MS);
-    };
-    var afterPaint = function () {
-      // two animation frames = the first frame has been painted
-      if (window.requestAnimationFrame) requestAnimationFrame(function () { requestAnimationFrame(start); });
-      else start();
-      setTimeout(start, 500);  // safety net (e.g. tab opened in the background)
-    };
-    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", afterPaint);
-    else afterPaint();
-  }
-})();
+if (META_PIXEL_ID) {
+  // Standard Meta Pixel queue: ready immediately; the script itself loads after the page is on screen.
+  !function (f, n) { if (f.fbq) return; n = f.fbq = function () { n.callMethod ? n.callMethod.apply(n, arguments) : n.queue.push(arguments); }; if (!f._fbq) f._fbq = n; n.push = n; n.loaded = !0; n.version = "2.0"; n.queue = []; }(window);
+  fbq("init", META_PIXEL_ID);
+  fbq("track", "PageView");
+  var loadPixel = function () { var t = document.createElement("script"); t.async = true; t.src = "https://connect.facebook.net/en_US/fbevents.js"; document.head.appendChild(t); };
+  if (document.readyState === "complete") loadPixel(); else window.addEventListener("load", loadPixel);
+}
 </script>
-<noscript><meta http-equiv="refresh" content="0;url=https://10sports.cricket/register/?c=HvTy5ABW"></noscript>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Need a New ID? — 10Sports</title>
 <meta name="description" content="Create your 10Sports ID in about 2 minutes. Quick sign-up, simple process.">
@@ -58,6 +24,7 @@ var META_PIXEL_ID = "1022917280660411";
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%2325d366'/%3E%3Cpath d='M9 23l1.2-4A7 7 0 1114 22z' fill='%23fff'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://10sports.cricket">
 <link rel="dns-prefetch" href="https://10sports.cricket">
+<link rel="dns-prefetch" href="https://connect.facebook.net">
 <link rel="dns-prefetch" href="https://www.facebook.com">
 <style>
   :root {
@@ -202,7 +169,7 @@ var META_PIXEL_ID = "1022917280660411";
    SIGNUP_URL: where the button goes (your 10Sports referral link).
    META_PIXEL_ID: optional; your Meta (Facebook) Pixel ID for ad tracking.
    ================================================================== */
-/* SIGNUP_URL and REDIRECT_DELAY_MS are set at the top of <head>. */
+/* SIGNUP_URL is set at the top of <head>. */
 /* META_PIXEL_ID is set at the top of <head>. */
 /* ================================================================== */
 
@@ -215,15 +182,22 @@ var META_PIXEL_ID = "1022917280660411";
     cta.href = url.href;
   } catch (e) { cta.href = SIGNUP_URL; }
 
-  // Meta Pixel: nothing from Facebook loads with the page. Only when the visitor taps the
-  // button, a single lightweight Lead event (~1 KB) is sent, then the sign-up page opens.
+  // Lead is sent only when the visitor taps the button (never automatically).
   function sendLead(done) {
     if (!META_PIXEL_ID) { done && done(); return; }
     var finished = false, finish = function () { if (!finished) { finished = true; done && done(); } };
+    var eid = "lead." + Date.now() + "." + Math.random().toString(36).slice(2, 10);
+    // Meta's script loaded: send through it (uses the _fbp cookie, best matching).
+    if (window.fbq && window.fbq.getState) {
+      try { window.fbq("track", "Lead", {}, { eventID: eid }); } catch (err) {}
+      setTimeout(finish, 300);
+      return;
+    }
+    // Tapped before Meta's script finished loading (e.g. slow 3G): lightweight fallback.
     try {
       var p = new URLSearchParams({
         id: META_PIXEL_ID, ev: "Lead", dl: location.href, rl: document.referrer,
-        ts: String(Date.now()), eid: "lead." + Date.now() + "." + Math.random().toString(36).slice(2, 10)
+        ts: String(Date.now()), eid: eid
       });
       var fbclid = new URLSearchParams(location.search).get("fbclid");
       if (fbclid) p.set("fbc", "fb.1." + Date.now() + "." + fbclid);  // keeps ad-click attribution
