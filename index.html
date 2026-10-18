@@ -2,317 +2,141 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<script>
-/* SIGNUP_URL: where the button goes (your 10Sports referral link).
-   META_PIXEL_ID: Meta Pixel. This page sends ONLY two events, directly (Meta's fbevents.js is NOT loaded,
-   so no automatic events and no Event-Setup-Tool rules can run here):
-     PageView -> when the page opens
-     Lead     -> only when the visitor taps the button (the sign-up page opens at once, no waiting)
-   It never sends CompleteRegistration. Visits and taps are also counted by our own stats at /t. */
-var SIGNUP_URL = "https://10sports.cricket/register/?c=HvTy5ABW";
-var META_PIXEL_ID = "1022917280660411";
-/* Sends one pixel event straight to Meta (~1 KB), fire-and-forget. keepalive lets it finish even while the
-   page is changing to the sign-up site, so nobody ever waits for it. Keeps _fbp and the ad click id (fbclid). */
-var sendPixel = function (ev) {
-  if (!META_PIXEL_ID) return;
-  try {
-    var now = Date.now(), fbp = (document.cookie.match(/(?:^|; )_fbp=([^;]+)/) || [])[1];
-    if (!fbp) {
-      fbp = "fb.1." + now + "." + Math.floor(Math.random() * 1e10);
-      document.cookie = "_fbp=" + fbp + "; max-age=7776000; path=/; SameSite=Lax";
-    }
-    var p = new URLSearchParams({
-      id: META_PIXEL_ID, ev: ev, dl: location.href, rl: document.referrer, ts: String(now), fbp: fbp,
-      eid: ev.toLowerCase() + "." + now + "." + Math.random().toString(36).slice(2, 10)
-    });
-    var fbclid = new URLSearchParams(location.search).get("fbclid");
-    if (fbclid) p.set("fbc", "fb.1." + now + "." + fbclid);
-    var u = "https://www.facebook.com/tr/?" + p.toString();
-    if (window.fetch) fetch(u, { mode: "no-cors", keepalive: true, credentials: "include" }).catch(function () {});
-    else new Image().src = u;
-  } catch (err) {}
-};
-sendPixel("PageView");
-/* Version B is live for everyone (A/B test ended). ?ab=a still shows the old version A, for reference. */
-var AB = (function () {
-  var v = "b";
-  try { if (new URLSearchParams(location.search).get("ab") === "a") v = "a"; } catch (e) {}
-  document.documentElement.className = "v-" + v;
-  return v;
-})();
-</script>
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Get your 10Sports ID in 60 seconds</title>
 <meta name="description" content="Get your 10Sports ID in 60 seconds. Free sign-up with your mobile number and OTP.">
 <meta name="theme-color" content="#06110b">
 <meta name="format-detection" content="telephone=no">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%2325d366'/%3E%3Cpath d='M9 23l1.2-4A7 7 0 1114 22z' fill='%23fff'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://10sports.cricket">
-<link rel="dns-prefetch" href="https://www.facebook.com">
 <link rel="dns-prefetch" href="https://10sports.cricket">
+<link rel="dns-prefetch" href="https://www.facebook.com">
 <style>
-  :root {
-    --logo: url("data:image/jpeg;base64,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");
-    --bg: #06110b;
-    --card: #0c1a13;
-    --tile: #12231a;
-    --line: rgba(120, 220, 160, .16);
-    --text: #eef7f1;
-    --muted: #a9bbb0;
-    --green: #25d366;
-    --green-hi: #8af0ad;
-    --accent: #7ee0a5;
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  html { background: var(--bg); }
-  body {
-    min-height: 100vh; min-height: 100dvh;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    color: var(--text); background: var(--bg);
-    background-image:
-      radial-gradient(70% 45% at 50% 0%, rgba(37, 211, 102, .22), transparent 70%),
-      radial-gradient(60% 35% at 50% 100%, rgba(110, 80, 220, .22), transparent 70%),
-      linear-gradient(rgba(255,255,255,.035) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(255,255,255,.035) 1px, transparent 1px);
-    background-size: auto, auto, 56px 56px, 56px 56px;
-    display: flex; align-items: center; justify-content: center;
-    padding: 24px 16px;
-    padding-bottom: 24px; padding-bottom: max(24px, env(safe-area-inset-bottom));
-  }
-  main {
-    width: 100%; max-width: 440px; text-align: center;
-    background: linear-gradient(180deg, rgba(18, 38, 27, .92), rgba(10, 20, 15, .96));
-    border: 1px solid var(--line); border-radius: 28px;
-    padding: 26px 18px 18px;
-    box-shadow: 0 0 0 1px rgba(255,255,255,.02), 0 20px 60px rgba(0,0,0,.45), 0 0 80px rgba(37,211,102,.08);
-  }
-  .pill {
-    display: inline-flex; align-items: center; gap: 8px;
-    font-size: 12px; font-weight: 800; letter-spacing: 1.6px; text-transform: uppercase;
-    color: var(--accent);
-  }
-  .pill i { width: 8px; height: 8px; border-radius: 50%; background: var(--green); box-shadow: 0 0 0 4px rgba(37,211,102,.18); }
-  .app-icon {
-    width: 84px; height: 84px; margin: 18px auto 16px; border-radius: 24px;
-    display: flex; align-items: center; justify-content: center;
-    background: #231f20; overflow: hidden;
-    box-shadow: 0 0 0 8px rgba(37,211,102,.08), 0 10px 30px rgba(37,211,102,.25);
-  }
-  .logo { display: block; background: var(--logo) center / cover no-repeat; }
-  .app-icon .logo { width: 100%; height: 100%; }
-  h1 { font-size: 40px; line-height: 1.05; font-weight: 900; letter-spacing: -1.2px; }
-  h1 span {
-    color: var(--green-hi);
-    background: linear-gradient(90deg, #8af0ad, #7fd6e8);
-    -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
-  }
-  .lead { margin: 14px auto 0; max-width: 360px; font-size: 15px; line-height: 1.55; color: var(--muted); }
-  .tiles { display: flex; gap: 8px; margin-top: 20px; }
-  .tile {
-    flex: 1; min-width: 0; padding: 14px 6px 12px; border-radius: 16px;
-    background: var(--tile); border: 1px solid var(--line);
-    font-size: 12.5px; font-weight: 700;
-  }
-  .tile b {
-    width: 34px; height: 34px; margin: 0 auto 8px; border-radius: 10px;
-    display: flex; align-items: center; justify-content: center;
-    background: rgba(37,211,102,.12); font-size: 16px; font-weight: 700; color: var(--green-hi);
-  }
-  .msg {
-    margin-top: 12px; padding: 12px 14px; border-radius: 16px; text-align: left;
-    background: var(--tile); border: 1px solid var(--line);
-    display: flex; align-items: center; gap: 12px;
-  }
-  .msg .av {
-    width: 40px; height: 40px; flex-shrink: 0; border-radius: 12px;
-    display: flex; align-items: center; justify-content: center;
-    background: rgba(37,211,102,.16); color: var(--green-hi); font-weight: 800; font-size: 17px;
-  }
-  .msg div { flex: 1; min-width: 0; }
-  .msg small { display: block; font-size: 11px; letter-spacing: .8px; text-transform: uppercase; color: var(--muted); }
-  .msg strong { display: block; margin-top: 3px; font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .dots { display: flex; gap: 4px; }
-  .dots i { width: 6px; height: 6px; border-radius: 50%; background: var(--green); animation: blink 1.2s infinite; }
-  .dots i:nth-child(2) { animation-delay: .2s; }
-  .dots i:nth-child(3) { animation-delay: .4s; }
-  @keyframes blink { 0%, 60%, 100% { opacity: .3; } 30% { opacity: 1; } }
-  .cta {
-    margin-top: 16px; min-height: 60px; border-radius: 18px;
-    display: flex; align-items: center; justify-content: center; gap: 10px;
-    background: linear-gradient(90deg, #6fe39a, #a6f3b8);
-    color: #06210f; text-decoration: none;
-    font-size: 17px; font-weight: 900; letter-spacing: .3px;
-    box-shadow: 0 10px 30px rgba(37,211,102,.3);
-    animation: nudge 2.6s ease-in-out infinite;
-  }
-  .cta:active { transform: scale(.98); }
-  @keyframes nudge { 0%, 85%, 100% { transform: scale(1); } 92% { transform: scale(1.025); } }
-  .checks {
-    display: flex; flex-wrap: wrap; justify-content: center; gap: 6px 14px;
-    margin-top: 14px; font-size: 12.5px; font-weight: 600; color: var(--muted);
-  }
-  .checks span::before { content: "✓ "; color: var(--green); font-weight: 900; }
-  .note { margin-top: 10px; font-size: 11.5px; color: var(--muted); }
-  .rg { margin-top: 6px; font-size: 11px; color: var(--muted); }
-  :focus-visible { outline: 3px solid var(--green-hi); outline-offset: 3px; }
-  @media (max-width: 360px) { h1 { font-size: 34px; } .tile { font-size: 11.5px; } }
-  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; } }
-  /* ---------- A/B ---------- */
-  .v-a .b-only, .v-b .a-only { display: none !important; }
-  .v-b body { align-items: flex-start; }
-  /* ---------- Version B: thumb-first ---------- */
-  .b { width: 100%; max-width: 440px; padding: 4px 4px 96px; text-align: left; }
-  .b-brand { display: flex; align-items: center; gap: 10px; font-size: 17px; font-weight: 800; }
-  .b-brand .logo { width: 40px; height: 40px; border-radius: 12px; flex-shrink: 0; }
-  .b-brand small { margin-left: auto; font-size: 12px; font-weight: 700; color: var(--muted); }
-  .b-h { margin-top: 22px; font-size: 34px; line-height: 1.08; letter-spacing: -.8px; font-weight: 900; }
-  .b-sub { margin-top: 10px; font-size: 15.5px; line-height: 1.5; color: var(--muted); }
-  .b-cta {
-    position: relative; overflow: hidden; margin-top: 22px; min-height: 74px; border-radius: 18px;
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    background: #ff8a1f; color: #1c0a00; text-decoration: none;
-    box-shadow: 0 0 0 5px rgba(255,138,31,.16), 0 14px 34px rgba(255,120,20,.33);
-  }
-  .b-cta strong { font-size: 21px; font-weight: 900; letter-spacing: .1px; }
-  .b-cta span { margin-top: 2px; font-size: 13px; font-weight: 700; color: #4a2300; }
-  .b-cta::after {
-    content: ""; position: absolute; top: 0; left: -60%; width: 40%; height: 100%;
-    background: linear-gradient(100deg, transparent, rgba(255,255,255,.55), transparent);
-    transform: skewX(-20deg); animation: shine 3.4s ease-in-out 1s infinite;
-  }
-  @keyframes shine { 0% { left: -60%; } 28%, 100% { left: 130%; } }
-  .b-cta:active, .b-sticky:active { transform: scale(.98); }
-  .b-ticks { display: flex; justify-content: center; gap: 16px; margin-top: 12px; font-size: 13px; font-weight: 700; color: var(--muted); }
-  .b-ticks span::before { content: "✓ "; color: var(--green-hi); }
-  .b-steps { list-style: none; margin-top: 26px; padding-top: 18px; border-top: 1px solid var(--line); display: grid; gap: 12px; counter-reset: s; }
-  .b-steps li { counter-increment: s; display: flex; align-items: center; gap: 12px; font-size: 15px; }
-  .b-steps li::before {
-    content: counter(s); width: 28px; height: 28px; flex-shrink: 0; border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    background: rgba(126,224,165,.14); color: var(--green-hi); font-size: 14px; font-weight: 800;
-  }
-  .b .rg { margin-top: 22px; text-align: center; }
-  .b-sticky {
-    position: fixed; left: 12px; right: 12px; z-index: 20;
-    bottom: 12px; bottom: max(12px, env(safe-area-inset-bottom));
-    min-height: 58px; border-radius: 16px; display: flex; align-items: center; justify-content: center;
-    background: #ff8a1f; color: #1c0a00; font-size: 18px; font-weight: 900; text-decoration: none;
-    box-shadow: 0 10px 30px rgba(0,0,0,.5); transform: translateY(150%); transition: transform .25s ease;
-  }
-  .b-sticky.show { transform: none; }
-  @media (max-width: 360px) { .b-h { font-size: 30px; } }
-  /* Looping animations stay still (on their first frame) until the page has settled:
-     first touch/scroll, or 4 s after load. Keeps first paint calm and Speed Index honest. */
-  .cta, .dots i, .b-cta::after { animation-play-state: paused; }
-  html.anim .cta, html.anim .dots i, html.anim .b-cta::after { animation-play-state: running; }
+/* Works on 2016+ browsers (iOS 9+, Android 5+ Chrome/WebView, Samsung Internet, UC, KaiOS):
+   no CSS variables, no flex/grid "gap", no URL/URLSearchParams; spacing uses margins. */
+*{box-sizing:border-box;margin:0;padding:0}
+html{background:#06110b}
+body{min-height:100vh;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;color:#eef7f1;background:#06110b;background-image:radial-gradient(ellipse at 50% 0,rgba(37,211,102,.2),transparent 60%),radial-gradient(ellipse at 50% 100%,rgba(110,80,220,.2),transparent 60%);background-repeat:no-repeat;padding:24px 16px 100px;-webkit-text-size-adjust:100%}
+.w{max-width:440px;margin:0 auto}
+.brand{display:-webkit-box;display:-webkit-flex;display:flex;-webkit-box-align:center;-webkit-align-items:center;align-items:center;font-size:17px;font-weight:800}
+.logo{width:40px;height:40px;border-radius:12px;margin-right:10px;-webkit-flex-shrink:0;flex-shrink:0;background:#231f20 url(data:image/jpeg;base64,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) center/cover no-repeat}
+.brand small{margin-left:auto;font-size:12px;font-weight:700;color:#a9bbb0}
+h1{margin-top:22px;font-size:34px;line-height:1.08;letter-spacing:-.8px;font-weight:900}
+.sub{margin-top:10px;font-size:15.5px;line-height:1.5;color:#a9bbb0}
+.cta,.stk{display:-webkit-box;display:-webkit-flex;display:flex;-webkit-box-orient:vertical;-webkit-flex-direction:column;flex-direction:column;-webkit-box-align:center;-webkit-align-items:center;align-items:center;-webkit-box-pack:center;-webkit-justify-content:center;justify-content:center;background:#ff8a1f;color:#1c0a00;text-decoration:none;text-align:center;-webkit-tap-highlight-color:transparent}
+.cta{position:relative;overflow:hidden;margin-top:22px;min-height:74px;border-radius:18px;box-shadow:0 0 0 5px rgba(255,138,31,.16),0 12px 30px rgba(255,120,20,.3)}
+.cta strong{font-size:21px;font-weight:900}
+.cta span{margin-top:2px;font-size:13px;font-weight:700;color:#4a2300}
+.cta:after{content:"";position:absolute;top:0;left:0;width:40%;height:100%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.5),transparent);-webkit-transform:translateX(-150%) skewX(-20deg);transform:translateX(-150%) skewX(-20deg)}
+.anim .cta:after{-webkit-animation:shine 3.4s ease-in-out infinite;animation:shine 3.4s ease-in-out infinite}
+@-webkit-keyframes shine{0%{-webkit-transform:translateX(-150%) skewX(-20deg)}28%,100%{-webkit-transform:translateX(330%) skewX(-20deg)}}
+@keyframes shine{0%{transform:translateX(-150%) skewX(-20deg)}28%,100%{transform:translateX(330%) skewX(-20deg)}}
+.cta:active,.stk:active{opacity:.9}
+.ticks{margin-top:12px;text-align:center;font-size:13px;font-weight:700;color:#a9bbb0}
+.ticks span{display:inline-block;margin:0 7px}
+.ticks span:before{content:"\2713  ";color:#8af0ad}
+ol{list-style:none;margin-top:26px;padding-top:18px;border-top:1px solid rgba(120,220,160,.16);counter-reset:s}
+li{counter-increment:s;position:relative;padding-left:40px;min-height:28px;line-height:28px;font-size:15px;margin-top:12px}
+li:first-child{margin-top:0}
+li:before{content:counter(s);position:absolute;left:0;top:0;width:28px;height:28px;border-radius:50%;text-align:center;background:rgba(126,224,165,.14);color:#8af0ad;font-size:14px;font-weight:800}
+.rg{margin-top:22px;text-align:center;font-size:11px;color:#a9bbb0}
+.stk{position:fixed;left:12px;right:12px;bottom:12px;z-index:20;min-height:58px;border-radius:16px;font-size:18px;font-weight:900;box-shadow:0 10px 30px rgba(0,0,0,.5);-webkit-transform:translateY(150%);transform:translateY(150%);-webkit-transition:-webkit-transform .25s;transition:transform .25s}
+.stk.show{-webkit-transform:none;transform:none}
+a:focus{outline:3px solid #8af0ad;outline-offset:3px}
+@media (max-width:360px){h1{font-size:30px}}
+@media (prefers-reduced-motion:reduce){.anim .cta:after{-webkit-animation:none;animation:none}.stk{transition:none}}
 </style>
 </head>
 <body>
-<main class="a-only">
-  <p class="pill"><i aria-hidden="true"></i>10Sports · Quick sign-up</p>
-
-  <div class="app-icon"><span class="logo" role="img" aria-label="10Sports"></span></div>
-
-  <h1>Need a <span>New ID?</span></h1>
-  <p class="lead">Skip the complicated process. Create your 10Sports ID in about 2 minutes — the sign-up page opens as soon as you tap below.</p>
-
-  <div class="tiles">
-    <div class="tile"><b aria-hidden="true">⚡</b>Quick Sign-up</div>
-    <div class="tile"><b aria-hidden="true">📱</b>Mobile Friendly</div>
-    <div class="tile"><b aria-hidden="true">✓</b>Simple Process</div>
-  </div>
-
-  <div class="msg">
-    <span class="av" aria-hidden="true">ID</span>
-    <div><small>Your request is ready</small><strong id="msgText">New 10Sports ID</strong></div>
-    <span class="dots" aria-hidden="true"><i></i><i></i><i></i></span>
-  </div>
-
-  <a class="cta" id="cta" href="https://10sports.cricket/register/?c=HvTy5ABW">
-    GET NEW ID NOW
-    <svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
-  </a>
-
-  <p class="checks"><span>Fast Sign-up</span><span>Takes ~2 Minutes</span><span>Simple Steps</span></p>
-  <p class="note" id="note">You will be taken to the 10Sports sign-up page.</p>
-  <p class="rg">18+ only · Please play responsibly</p>
-</main>
-
-<div class="b b-only">
-  <div class="b-brand"><span class="logo" aria-hidden="true"></span>10Sports<small>18+ only</small></div>
-  <h1 class="b-h">Get your 10Sports ID in 60&nbsp;seconds</h1>
-  <p class="b-sub">Sign up in a few quick steps. Works on any phone.</p>
-  <a class="b-cta js-cta" data-b="b_main" href="https://10sports.cricket/register/?c=HvTy5ABW"><strong>Get my ID now</strong><span>Free sign-up, takes about 60 seconds</span></a>
-  <p class="b-ticks"><span>Free</span><span>60 seconds</span><span>Any phone</span></p>
-  <ol class="b-steps">
-    <li>Tap “Get my ID now”</li>
+<div class="w">
+  <div class="brand"><span class="logo" aria-hidden="true"></span>10Sports<small>18+ only</small></div>
+  <h1>Get your 10Sports ID in 60&nbsp;seconds</h1>
+  <p class="sub">Sign up in a few quick steps. Works on any phone.</p>
+  <a class="cta js-cta" id="cta" data-b="b_main" href="https://10sports.cricket/register/?c=HvTy5ABW"><strong>Get my ID now</strong><span>Free sign-up, takes about 60 seconds</span></a>
+  <p class="ticks"><span>Free</span><span>60 seconds</span><span>Any phone</span></p>
+  <ol>
+    <li>Tap &ldquo;Get my ID now&rdquo;</li>
     <li>Enter your 10-digit mobile number</li>
     <li>Verify with the OTP on SMS or WhatsApp</li>
   </ol>
   <p class="rg">Please play responsibly.</p>
 </div>
-<a class="b-sticky b-only js-cta" id="bSticky" data-b="b_sticky" href="https://10sports.cricket/register/?c=HvTy5ABW" aria-hidden="true" tabindex="-1">Get my ID now</a>
-
+<a class="stk js-cta" id="stk" data-b="b_sticky" href="https://10sports.cricket/register/?c=HvTy5ABW" aria-hidden="true" tabindex="-1">Get my ID now</a>
 <script>
-/* ============================ SETTINGS ============================
-   SIGNUP_URL: where the button goes (your 10Sports referral link).
-   ================================================================== */
-/* SIGNUP_URL is set at the top of <head>. */
-/* ================================================================== */
-
+/* SETTINGS
+   SIGNUP_URL: your 10Sports referral link (also set in the two button hrefs above, so they work without JavaScript).
+   META_PIXEL_ID: Meta Pixel. Only two events are sent, directly (fbevents.js is NOT loaded):
+     PageView when the page opens, Lead when a button is tapped. Visits/taps also go to our own stats at /t.
+   Written in plain ES5 so it runs on 2016-era phone browsers. */
+var SIGNUP_URL = "https://10sports.cricket/register/?c=HvTy5ABW";
+var META_PIXEL_ID = "1022917280660411";
 (function () {
-  var cta = document.getElementById("cta");
-  var links = [cta].concat([].slice.call(document.querySelectorAll(".js-cta")));
-  // Pass ad attribution (utm_*, gclid, fbclid) through to the sign-up page.
-  try {
-    var url = new URL(SIGNUP_URL), q = new URLSearchParams(location.search);
-    q.forEach(function (v, k) { if (/^(utm_|src$|gclid$|fbclid$)/.test(k) && !url.searchParams.has(k)) url.searchParams.set(k, v); });
-    links.forEach(function (l) { l.href = url.href; });
-  } catch (e) {}
-
-  // First-party stats (our own server: Cloudflare Worker + D1 at /t on this domain).
-  // sendBeacon is used so the "tap" is still delivered when the page changes to the sign-up site.
-  function hit(e, button) {
+  var d = document, w = window, search = location.search.substring(1);
+  function qp(k) {                                   // read one ?param (no URLSearchParams needed)
+    var m = new RegExp("(?:^|&)" + k + "=([^&]*)").exec(search);
+    try { return m ? decodeURIComponent(m[1].replace(/\+/g, " ")) : null; } catch (e) { return null; }
+  }
+  function beacon(u) {                               // fire-and-forget GET that survives the page change
+    try { if (w.fetch) { w.fetch(u, { mode: "no-cors", keepalive: true, credentials: "include" })["catch"](function () {}); return; } } catch (e) {}
+    new Image().src = u;
+  }
+  function pixel(ev) {
+    if (!META_PIXEL_ID) return;
     try {
-      var q = new URLSearchParams(location.search);
-      var body = JSON.stringify({
-        e: e, b: button || null, v: AB, r: document.referrer || null, fb: q.has("fbclid") ? 1 : 0,
-        us: q.get("utm_source"), um: q.get("utm_medium"), uc: q.get("utm_campaign"), ut: q.get("utm_content")
-      });
+      var now = new Date().getTime(), enc = encodeURIComponent,
+          fbp = (d.cookie.match(/(?:^|; )_fbp=([^;]+)/) || [])[1];
+      if (!fbp) { fbp = "fb.1." + now + "." + Math.floor(Math.random() * 1e10); d.cookie = "_fbp=" + fbp + "; max-age=7776000; path=/; SameSite=Lax"; }
+      var u = "https://www.facebook.com/tr/?id=" + META_PIXEL_ID + "&ev=" + ev + "&dl=" + enc(location.href) +
+              "&rl=" + enc(d.referrer) + "&ts=" + now + "&fbp=" + enc(fbp) +
+              "&eid=" + ev.toLowerCase() + "." + now + "." + Math.random().toString(36).slice(2, 10);
+      var fbclid = qp("fbclid");
+      if (fbclid) u += "&fbc=" + enc("fb.1." + now + "." + fbclid);
+      beacon(u);
+    } catch (e) {}
+  }
+  function hit(e, b) {                               // our own stats (Cloudflare Worker + D1 at /t)
+    try {
+      var body = JSON.stringify({ e: e, b: b || null, v: "b", r: d.referrer || null, fb: qp("fbclid") ? 1 : 0,
+        us: qp("utm_source"), um: qp("utm_medium"), uc: qp("utm_campaign"), ut: qp("utm_content") });
       if (navigator.sendBeacon && navigator.sendBeacon("/t", new Blob([body], { type: "text/plain" }))) return;
-      fetch("/t", { method: "POST", body: body, keepalive: true, headers: { "Content-Type": "text/plain" } });
+      if (w.fetch) w.fetch("/t", { method: "POST", body: body, keepalive: true, headers: { "Content-Type": "text/plain" } })["catch"](function () {});
     } catch (err) {}
   }
-  hit("view");
-  links.forEach(function (l) {
-    l.addEventListener("click", function () { hit("tap", l.getAttribute("data-b") || "cta"); });
-  });
 
-  // Version B: sticky bottom button appears whenever the main button is off screen.
-  var sticky = document.getElementById("bSticky"), bMain = document.querySelector(".b-cta");
-  if (AB === "b" && sticky && bMain) {
-    if ("IntersectionObserver" in window) {
-      new IntersectionObserver(function (en) { sticky.classList.toggle("show", !en[0].isIntersecting); }).observe(bMain);
-    } else sticky.classList.add("show");
+  // Pass ad attribution (utm_*, src, gclid, fbclid) through to the sign-up page.
+  var href = SIGNUP_URL, pairs = search ? search.split("&") : [];
+  for (var i = 0; i < pairs.length; i++) {
+    var k = pairs[i].split("=")[0];
+    if (/^(utm_[a-z]+|src|gclid|fbclid)$/.test(k) && href.indexOf("?" + k + "=") < 0 && href.indexOf("&" + k + "=") < 0)
+      href += (href.indexOf("?") < 0 ? "?" : "&") + pairs[i];
   }
+  var links = d.querySelectorAll(".js-cta");
+  for (var j = 0; j < links.length; j++) (function (l) {
+    l.href = href;
+    l.addEventListener("click", function () {      // the link opens at once; nothing waits for tracking
+      hit("tap", l.getAttribute("data-b"));
+      try { (w.dataLayer = w.dataLayer || []).push({ event: "signup_click", variant: "b" }); } catch (e) {}
+      pixel("Lead");
+    });
+  })(links[j]);
 
-  // Button tap: send Lead (fire-and-forget) and let the link open the sign-up page immediately.
-  // The browser navigates on the same tap: nothing waits for the pixel.
-  links.forEach(function (link) { link.addEventListener("click", function () {
-    try { (window.dataLayer = window.dataLayer || []).push({ event: "signup_click", variant: AB }); } catch (err) {}
-    sendPixel("Lead");
-  }); });
+  // Sticky bottom button when the main button is scrolled off screen.
+  var stk = d.getElementById("stk"), cta = d.getElementById("cta");
+  if (w.IntersectionObserver) new IntersectionObserver(function (en) {
+    stk.className = en[0].isIntersecting ? "stk js-cta" : "stk js-cta show";
+  }).observe(cta);
+  else stk.className = "stk js-cta show";
 
-})();
-</script>
-<script>
-(function () {
-  var on = function () {
-    document.documentElement.classList.add("anim");
-    ["pointerdown", "touchstart", "scroll", "keydown"].forEach(function (t) { removeEventListener(t, on, true); });
-  };
-  ["pointerdown", "touchstart", "scroll", "keydown"].forEach(function (t) { addEventListener(t, on, { capture: true, passive: true, once: true }); });
-  addEventListener("load", function () { setTimeout(on, 4000); });
+  // Tracking after first paint, so it never competes with the page itself on slow 3G.
+  function after() { pixel("PageView"); hit("view"); }
+  if (d.readyState === "complete") after(); else w.addEventListener("load", after);
+
+  // Button shine starts on first touch/scroll or 4 s after load (calm first paint).
+  var started = false;
+  function anim() { if (started) return; started = true; d.documentElement.className = "anim"; }
+  var evs = ["touchstart", "mousedown", "scroll", "keydown"];
+  for (var n = 0; n < evs.length; n++) w.addEventListener(evs[n], anim, true);
+  w.addEventListener("load", function () { setTimeout(anim, 4000); });
 })();
 </script>
 </body>
