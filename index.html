@@ -33,23 +33,17 @@ var sendPixel = function (ev) {
   } catch (err) {}
 };
 sendPixel("PageView");
-/* A/B test: each visitor gets version a or b (50/50) and keeps it. Force one with ?ab=a or ?ab=b. */
+/* Version B is live for everyone (A/B test ended). ?ab=a still shows the old version A, for reference. */
 var AB = (function () {
-  var v;
-  try {
-    v = new URLSearchParams(location.search).get("ab");
-    if (v !== "a" && v !== "b") {
-      v = localStorage.getItem("newid_ab");
-      if (v !== "a" && v !== "b") { v = Math.random() < 0.5 ? "a" : "b"; localStorage.setItem("newid_ab", v); }
-    }
-  } catch (e) { v = Math.random() < 0.5 ? "a" : "b"; }
+  var v = "b";
+  try { if (new URLSearchParams(location.search).get("ab") === "a") v = "a"; } catch (e) {}
   document.documentElement.className = "v-" + v;
   return v;
 })();
 </script>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Need a New ID? — 10Sports</title>
-<meta name="description" content="Create your 10Sports ID in about 2 minutes. Quick sign-up, simple process.">
+<title>Get your 10Sports ID in 60 seconds</title>
+<meta name="description" content="Get your 10Sports ID in 60 seconds. Free sign-up with your mobile number and OTP.">
 <meta name="theme-color" content="#06110b">
 <meta name="format-detection" content="telephone=no">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%2325d366'/%3E%3Cpath d='M9 23l1.2-4A7 7 0 1114 22z' fill='%23fff'/%3E%3C/svg%3E">
@@ -246,10 +240,10 @@ var AB = (function () {
 
 <div class="b b-only">
   <div class="b-brand"><span class="logo" aria-hidden="true"></span>10Sports<small>18+ only</small></div>
-  <h1 class="b-h">Get your 10Sports ID in 2&nbsp;minutes</h1>
+  <h1 class="b-h">Get your 10Sports ID in 60&nbsp;seconds</h1>
   <p class="b-sub">Sign up in a few quick steps. Works on any phone.</p>
-  <a class="b-cta js-cta" data-b="b_main" href="https://10sports.cricket/register/?c=HvTy5ABW"><strong>Get my ID now</strong><span>Free sign-up, takes about 2 minutes</span></a>
-  <p class="b-ticks"><span>Free</span><span>2 minutes</span><span>Any phone</span></p>
+  <a class="b-cta js-cta" data-b="b_main" href="https://10sports.cricket/register/?c=HvTy5ABW"><strong>Get my ID now</strong><span>Free sign-up, takes about 60 seconds</span></a>
+  <p class="b-ticks"><span>Free</span><span>60 seconds</span><span>Any phone</span></p>
   <ol class="b-steps">
     <li>Tap “Get my ID now”</li>
     <li>Enter your 10-digit mobile number</li>
