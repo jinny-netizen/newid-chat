@@ -7,14 +7,14 @@
    META_PIXEL_ID: Meta Pixel. This page sends ONLY two events, directly (Meta's fbevents.js is NOT loaded,
    so no automatic events and no Event-Setup-Tool rules can run here):
      PageView -> when the page opens
-     Lead     -> only when the visitor taps the button
+     Lead     -> only when the visitor taps the button (the sign-up page opens at once, no waiting)
    It never sends CompleteRegistration. Visits and taps are also counted by our own stats at /t. */
 var SIGNUP_URL = "https://10sports.cricket/register/?c=HvTy5ABW";
 var META_PIXEL_ID = "1022917280660411";
-/* Sends one pixel event straight to Meta (~1 KB). Keeps the _fbp browser id and the ad click id (fbclid). */
-var sendPixel = function (ev, done) {
-  var finished = false, finish = function () { if (!finished) { finished = true; done && done(); } };
-  if (!META_PIXEL_ID) { finish(); return; }
+/* Sends one pixel event straight to Meta (~1 KB), fire-and-forget. keepalive lets it finish even while the
+   page is changing to the sign-up site, so nobody ever waits for it. Keeps _fbp and the ad click id (fbclid). */
+var sendPixel = function (ev) {
+  if (!META_PIXEL_ID) return;
   try {
     var now = Date.now(), fbp = (document.cookie.match(/(?:^|; )_fbp=([^;]+)/) || [])[1];
     if (!fbp) {
@@ -27,11 +27,10 @@ var sendPixel = function (ev, done) {
     });
     var fbclid = new URLSearchParams(location.search).get("fbclid");
     if (fbclid) p.set("fbc", "fb.1." + now + "." + fbclid);
-    var img = new Image();
-    img.onload = img.onerror = finish;
-    img.src = "https://www.facebook.com/tr/?" + p.toString();
-  } catch (err) { finish(); return; }
-  setTimeout(finish, 400);  // never hold the visitor longer than 0.4 s
+    var u = "https://www.facebook.com/tr/?" + p.toString();
+    if (window.fetch) fetch(u, { mode: "no-cors", keepalive: true, credentials: "include" }).catch(function () {});
+    else new Image().src = u;
+  } catch (err) {}
 };
 sendPixel("PageView");
 /* A/B test: each visitor gets version a or b (50/50) and keeps it. Force one with ?ab=a or ?ab=b. */
@@ -297,19 +296,12 @@ var AB = (function () {
     } else sticky.classList.add("show");
   }
 
-  // Button tap: send Lead (only here, never automatically), then open the sign-up page.
-  var going = false;
-  links.forEach(function (link) { link.addEventListener("click", function (e) {
+  // Button tap: send Lead (fire-and-forget) and let the link open the sign-up page immediately.
+  // The browser navigates on the same tap: nothing waits for the pixel.
+  links.forEach(function (link) { link.addEventListener("click", function () {
     try { (window.dataLayer = window.dataLayer || []).push({ event: "signup_click", variant: AB }); } catch (err) {}
-    if (!META_PIXEL_ID) return;                                          // no pixel: plain link
-    if (e.ctrlKey || e.metaKey || e.shiftKey) { sendPixel("Lead"); return; }  // new-tab clicks
-    e.preventDefault();
-    if (going) return; going = true;
-    var href = link.href;
-    sendPixel("Lead", function () { location.href = href; });
+    sendPixel("Lead");
   }); });
-  // Coming back with the Back button: allow tapping again.
-  window.addEventListener("pageshow", function () { going = false; });
 
 })();
 </script>
